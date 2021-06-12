@@ -12,10 +12,10 @@ You can use these C program by using command
 In here, "tscounter_original.out" file means by Mutex and "tscounter.out" file means by Semaphore
 
 
-![Semaphore](./github_image/tscounter.png)
+![Semaphore](./mnt/c/Users/jmjwa/OneDrive/"바탕 화면"/github_image/tscounter.png)
 
 
-![Mutex](./github_image/tscounter_original.png)
+![Mutex](./mnt/c/Users/jmjwa/OneDrive/"바탕 화면"/github_image/tscounter_original.png)
 
 As you can see, by Semaphore was much slower than by Mutex. So I thought it should be used in resource
 that obtains a long usage time. 
