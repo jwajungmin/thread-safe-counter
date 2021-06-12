@@ -3,10 +3,24 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/sem.h>
+
+union semun {
+    int val;
+    struct semid_ds *buf;
+    ushort *array;
+};
+
+#define PATH "/mnt/c/Users/jmjwa/key"
 
 typedef struct __counter_t {
+    key_t key;
+    int semid;
     int value;
-    pthread_mutex_t lock;
+    struct sembuf s;
+    union semun arg;
 } counter_t;
 
 unsigned int loop_cnt;
@@ -14,25 +28,59 @@ counter_t counter;
 
 void init(counter_t *c) {
     c->value = 0;
-    pthread_mutex_init(&c->lock, NULL);
+    c->key = ftok(PATH, 'z');
+    c->semid = semget(c->key, 1, 0600 | IPC_CREAT);
+    c->arg.val = 1;
+    semctl(c->semid, 0, SETVAL, c->arg);
 }
 
 void increment(counter_t *c) {
-    pthread_mutex_lock(&c->lock);
+    struct sembuf s;
+
+    s.sem_num = 0;
+    s.sem_op = -1;
+    s.sem_flg = 0;
+    semop(c->semid, &s, 1);
+
     c->value++;
-    pthread_mutex_unlock(&c->lock);
+
+    s.sem_num = 0;
+    s.sem_op = 1;
+    s.sem_flg = 0;
+    semop(c->semid, &s, 1);
 }
 
 void decrement(counter_t *c) {
-    pthread_mutex_lock(&c->lock);
+    struct sembuf s;
+
+    s.sem_num = 0;
+    s.sem_op = -1;
+    s.sem_flg = 0;
+    semop(c->semid, &s, 1);
+
     c->value--;
-    pthread_mutex_unlock(&c->lock);
+
+    s.sem_num = 0;
+    s.sem_op = 1;
+    s.sem_flg = 0;
+    semop(c->semid, &s, 1);
 }
 
 int get(counter_t *c) {
-    pthread_mutex_lock(&c->lock);
+    struct sembuf s;
+
+    s.sem_num = 0;
+    s.sem_op = -1;
+    s.sem_flg = 0;
+    semop(c->semid, &s, 1);
+
     int rc = c->value;
-    pthread_mutex_unlock(&c->lock);
+
+    s.sem_num = 0;
+    s.sem_op = 1;
+    s.sem_flg = 0;
+    semop(c->semid, &s, 1);
+
     return rc;
 }
 
@@ -64,4 +112,5 @@ int main(int argc, char *argv[])
     pthread_join(p2, NULL); 
     printf("main: done [counter: %d] [should be: %d]\n", get(&counter), loop_cnt * 2);
     return 0;
+
 }
