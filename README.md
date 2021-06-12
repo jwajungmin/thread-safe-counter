@@ -11,6 +11,9 @@ You can use these C program by using command
 
 In here, "tscounter_original.out" file means by Mutex and "tscounter.out" file means by Semaphore
 
+
+
+
 By Semaphore
 
 ![tscounter](https://user-images.githubusercontent.com/62414463/121784492-21d28880-cbef-11eb-962c-6aea64c17559.png)
